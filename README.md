@@ -366,10 +366,3 @@ Pertanyaan atau masalah?
 
 ---
 
-<div align="center">
-
-**Dibuat dengan ❤️ untuk bengkel dan toko sparepart Indonesia**
-
-⌨️ dengan ❤️ oleh [Nama Anda] © 2024
-
-</div>
