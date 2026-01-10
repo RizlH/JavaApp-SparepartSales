@@ -38,9 +38,9 @@ Aplikasi **Sistem Penjualan Sparepart** adalah solusi desktop komprehensif yang 
 ### 🎯 Tujuan Utama
 
 ✅ **Otomatisasi Penuh** proses penjualan dan manajemen stok  
-✅ **Keamanan Data** dengan transaksi database yang konsisten  
+✅ **Keamanan Data** dengan autentikasi petugas dan transaksi database yang konsisten  
 ✅ **Efisiensi Operasional** dengan pengurangan kesalahan manual  
-✅ **Laporan Real-time** ketersediaan stok
+✅ **Laporan Real-time** ketersediaan stok dan penjualan
 
 ---
 
@@ -53,6 +53,7 @@ Aplikasi **Sistem Penjualan Sparepart** adalah solusi desktop komprehensif yang 
 | CRUD Sparepart | Tambah, lihat, edit, hapus data sparepart | 📦 |
 | CRUD Pelanggan | Kelola database pelanggan | 👥 |
 | CRUD Penjualan | Kelola transaksi penjualan | 💰 |
+| Manajemen Petugas | Kelola akun dan level akses petugas | 🔐 |
 | Pencarian Cerdas | Temukan data dengan cepat | 🔍 |
 
 ### 📊 Manajemen Stok Otomatis
@@ -66,6 +67,7 @@ Aplikasi **Sistem Penjualan Sparepart** adalah solusi desktop komprehensif yang 
 
 ### 🛡️ Fitur Keamanan
 
+✅ Sistem Login dengan level akses (Admin)  
 ✅ Transaksi Atomic (Commit/Rollback)  
 ✅ Validasi Input real-time  
 ✅ PreparedStatement anti SQL Injection  
@@ -80,6 +82,7 @@ Aplikasi **Sistem Penjualan Sparepart** adalah solusi desktop komprehensif yang 
 - Real-time update stok
 - Minimal operasi database
 - Optimasi query dengan index
+- Interface yang responsif dan user-friendly
 
 ### 🔄 Logika Stok Cerdas
 
@@ -100,21 +103,23 @@ public void updateStok(int idSparepart, int perubahan) {
 ┌─────────────────────────────────────────────┐
 │            PRESENTATION LAYER               │
 │   Java Swing GUI (Form, Table, Dialog)     │
+│   - FrameLogin, FrameMenu, FramePenjualan   │
 └───────────────────┬─────────────────────────┘
                     │
 ┌───────────────────▼─────────────────────────┐
 │            BUSINESS LAYER                   │
 │   Logic: Stok, Validasi, Transaksi         │
+│   - Koneksi Database, CRUD Operations       │
 └───────────────────┬─────────────────────────┘
                     │
 ┌───────────────────▼─────────────────────────┐
 │            DATA ACCESS LAYER                │
-│   JDBC, PreparedStatement, Connection      │
+│   JDBC Connection, PreparedStatement        │
 └───────────────────┬─────────────────────────┘
                     │
 ┌───────────────────▼─────────────────────────┐
 │            DATABASE LAYER                   │
-│   MySQL dengan Relasi Tabel                │
+│   MySQL/MariaDB - Database: sparepart       │
 └─────────────────────────────────────────────┘
 ```
 
@@ -125,49 +130,78 @@ public void updateStok(int idSparepart, int perubahan) {
 ### 📦 Tabel sparepart
 
 ```sql
-CREATE TABLE sparepart (
-    id_sparepart INT PRIMARY KEY AUTO_INCREMENT,
-    nama_sparepart VARCHAR(100) NOT NULL,
-    stok INT DEFAULT 0,
-    harga INT NOT NULL CHECK (harga >= 0),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_nama (nama_sparepart)
-) ENGINE=InnoDB;
+CREATE TABLE `sparepart` (
+  `id_sparepart` int(3) NOT NULL AUTO_INCREMENT,
+  `nama_sparepart` varchar(30) NOT NULL,
+  `satuan` varchar(20) NOT NULL,
+  `stok` varchar(30) NOT NULL,
+  `harga_satuan` int(10) NOT NULL,
+  PRIMARY KEY (`id_sparepart`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
+
+**Kolom:**
+- `id_sparepart`: ID unik sparepart (Auto Increment)
+- `nama_sparepart`: Nama produk sparepart
+- `satuan`: Satuan produk (Pcs, Galon, dll)
+- `stok`: Jumlah stok tersedia
+- `harga_satuan`: Harga per satuan produk
 
 ### 👥 Tabel pelanggan
 
 ```sql
-CREATE TABLE pelanggan (
-    id_pelanggan INT PRIMARY KEY AUTO_INCREMENT,
-    nama VARCHAR(100) NOT NULL,
-    alamat TEXT NOT NULL,
-    no_telp VARCHAR(15),
-    email VARCHAR(100),
-    INDEX idx_nama (nama)
-) ENGINE=InnoDB;
+CREATE TABLE `pelanggan` (
+  `id_pelanggan` int(3) NOT NULL AUTO_INCREMENT,
+  `nama` varchar(30) NOT NULL,
+  `alamat` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_pelanggan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
+
+**Kolom:**
+- `id_pelanggan`: ID unik pelanggan (Auto Increment)
+- `nama`: Nama pelanggan
+- `alamat`: Alamat pelanggan
 
 ### 💰 Tabel penjualan
 
 ```sql
-CREATE TABLE penjualan (
-    id_penjualan INT PRIMARY KEY AUTO_INCREMENT,
-    id_pelanggan INT NOT NULL,
-    id_sparepart INT NOT NULL,
-    beli INT NOT NULL CHECK (beli > 0),
-    subtotal INT NOT NULL,
-    tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_pelanggan) 
-        REFERENCES pelanggan(id_pelanggan) 
-        ON DELETE RESTRICT,
-    FOREIGN KEY (id_sparepart) 
-        REFERENCES sparepart(id_sparepart) 
-        ON DELETE RESTRICT,
-    INDEX idx_tanggal (tanggal),
-    INDEX idx_pelanggan (id_pelanggan)
-) ENGINE=InnoDB;
+CREATE TABLE `penjualan` (
+  `id_penjualan` int(3) NOT NULL AUTO_INCREMENT,
+  `id_pelanggan` int(3) NOT NULL,
+  `id_sparepart` int(3) NOT NULL,
+  `beli` int(3) NOT NULL,
+  `subtotal` int(10) NOT NULL,
+  PRIMARY KEY (`id_penjualan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ```
+
+**Kolom:**
+- `id_penjualan`: ID unik transaksi (Auto Increment)
+- `id_pelanggan`: Foreign key ke tabel pelanggan
+- `id_sparepart`: Foreign key ke tabel sparepart
+- `beli`: Jumlah barang dibeli
+- `subtotal`: Total harga (harga_satuan × beli)
+
+### 🔐 Tabel petugas
+
+```sql
+CREATE TABLE `petugas` (
+  `id_petugas` int(3) NOT NULL AUTO_INCREMENT,
+  `username` varchar(20) NOT NULL,
+  `password` varchar(20) NOT NULL,
+  `nama_petugas` varchar(30) NOT NULL,
+  `level` varchar(10) NOT NULL,
+  PRIMARY KEY (`id_petugas`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
+
+**Kolom:**
+- `id_petugas`: ID unik petugas (Auto Increment)
+- `username`: Username untuk login
+- `password`: Password petugas
+- `nama_petugas`: Nama lengkap petugas
+- `level`: Level akses (admin, kasir, dll)
 
 ---
 
@@ -175,81 +209,160 @@ CREATE TABLE penjualan (
 
 ### 📋 Prasyarat
 
-- Java Development Kit (JDK) 8 atau lebih tinggi
-- MySQL Server 5.7+
-- IDE (NetBeans, IntelliJ IDEA, atau Eclipse)
-- MySQL Connector/J (JDBC Driver)
+- ☕ Java Development Kit (JDK) 8 atau lebih tinggi
+- 🗄️ MySQL Server 5.7+ / MariaDB 10.4+
+- 💻 IDE (NetBeans, IntelliJ IDEA, atau Eclipse)
+- 🔌 MySQL Connector/J (JDBC Driver)
 
 ### 🚀 Langkah Instalasi
 
-#### 1. Setup Database
+#### 1. Clone/Download Project
 
 ```bash
-# Import database
-mysql -u root -p < database_setup.sql
+git clone https://github.com/username/penjualansparepart.git
+cd penjualansparepart
 ```
 
-#### 2. Konfigurasi Koneksi
+#### 2. Setup Database
+
+```bash
+# Login ke MySQL
+mysql -u root -p
+
+# Buat database
+CREATE DATABASE sparepart;
+
+# Import database
+mysql -u root -p sparepart < sparepart.sql
+```
+
+Atau import melalui phpMyAdmin:
+1. Buka phpMyAdmin
+2. Buat database baru bernama `sparepart`
+3. Import file `sparepart.sql`
+
+#### 3. Konfigurasi Koneksi Database
+
+Edit file koneksi di package `conn/koneksi.java`:
 
 ```java
-// File: DatabaseConfig.java
-public class DatabaseConfig {
-    private static final String URL = "jdbc:mysql://localhost:3306/sparepart_db";
-    private static final String USER = "root";
-    private static final String PASS = "password";
+public class koneksi {
+    private static Connection conn;
     
     public static Connection getConnection() {
-        return DriverManager.getConnection(URL, USER, PASS);
+        try {
+            String url = "jdbc:mysql://localhost:3306/sparepart";
+            String user = "root";
+            String password = ""; // Sesuaikan dengan password MySQL Anda
+            
+            Class.forName("com.mysql.jdbc.Driver");
+            conn = DriverManager.getConnection(url, user, password);
+            
+            System.out.println("Koneksi Berhasil");
+        } catch (Exception e) {
+            System.out.println("Koneksi Gagal: " + e.getMessage());
+        }
+        return conn;
     }
 }
 ```
 
-#### 3. Struktur Project
+#### 4. Struktur Project
 
 ```
-sparepart-sales-system/
-├── src/
-│   ├── model/          # Model classes
-│   ├── dao/            # Data Access Objects
-│   ├── service/        # Business logic
-│   ├── ui/             # Swing interfaces
-│   └── util/           # Utilities
-├── lib/                # External libraries
-├── docs/               # Documentation
+PenjualanSparePart/
+├── build/              # Compiled classes
+├── nbproject/          # NetBeans project files
+├── src/                # Source code
+│   ├── conn/          # Database connection
+│   │   └── koneksi.java
+│   └── view/          # GUI Forms
+│       ├── FrameLogin.form
+│       ├── FrameLogin.java
+│       ├── FrameMenu.form
+│       ├── FrameMenu.java
+│       ├── FramePelanggan.form
+│       ├── FramePelanggan.java
+│       ├── FramePenjualan.form
+│       ├── FramePenjualan.java
+│       ├── FramePetugas.form
+│       ├── FramePetugas.java
+│       ├── FrameSparepart.form
+│       └── FrameSparepart.java
+├── test/              # Test files
+├── dist/              # Distributable files
+├── images/            # Image resources
+│   ├── exit2.png
+│   ├── file.jpg
+│   ├── toko.png
+│   └── user.png
+├── build.xml
+├── manifest.mf
+├── sparepart.sql      # Database dump
 └── README.md
 ```
 
-#### 4. Menjalankan Aplikasi
+#### 5. Menjalankan Aplikasi
+
+**Via NetBeans:**
+1. Buka NetBeans IDE
+2. File → Open Project
+3. Pilih folder `PenjualanSparePart`
+4. Klik kanan project → Run
+
+**Via Command Line:**
 
 ```bash
 # Compile
-javac -cp ".;lib/mysql-connector-java.jar" src/*.java
+javac -cp ".;lib/mysql-connector-java.jar" src/view/*.java
 
 # Run
-java -cp ".;lib/mysql-connector-java.jar" src.MainApp
+java -cp ".;lib/mysql-connector-java.jar;build/classes" view.FrameLogin
+```
+
+#### 6. Login Default
+
+```
+Username: admin
+Password: 123
+Level: admin
 ```
 
 ---
 
 ## 📊 Demo Screenshots
 
-### 🖥️ Dashboard Utama
+### 🔐 Form Login
 
 ```
 ┌─────────────────────────────────────────────┐
-│   SISTEM PENJUALAN SPAREPART MOBIL         │
+│         SISTEM PENJUALAN SPAREPART          │
 ├─────────────────────────────────────────────┤
-│  [📊] Dashboard        [📦] Sparepart      │
-│  [👥] Pelanggan        [💰] Penjualan      │
-│  [📈] Laporan          [⚙️] Pengaturan     │
+│                                             │
+│   Username: [________________]              │
+│   Password: [________________]              │
+│                                             │
+│         [LOGIN]        [CANCEL]             │
+└─────────────────────────────────────────────┘
+```
+
+### 🖥️ Dashboard Menu Utama
+
+```
+┌─────────────────────────────────────────────┐
+│      SISTEM PENJUALAN SPAREPART MOBIL       │
+├─────────────────────────────────────────────┤
+│ [📦] Master Sparepart  [👥] Data Pelanggan │
+│ [💰] Transaksi         [🔐] Data Petugas   │
+│                [🚪] Logout                 │
 └─────────────────────────────────────────────┘
 ```
 
 ### 📦 Form Sparepart
 
 ```java
-// Input validation example
-if (stok < beli) {
+// Validasi stok sebelum penjualan
+if (Integer.parseInt(stok) < Integer.parseInt(beli)) {
     JOptionPane.showMessageDialog(null, 
         "❌ Stok tidak mencukupi!\n" +
         "Stok tersedia: " + stok + "\n" +
@@ -264,49 +377,100 @@ if (stok < beli) {
 
 ## 🔄 Alur Kerja Sistem
 
-### 1. Proses Penjualan
+### 1. Proses Login
 
 ```
-User Input → Validasi Stok → Update Penjualan → Update Stok → Commit
+Input Credentials → Validasi Database → Cek Level → Redirect ke Menu
 ```
 
-### 2. Proses Update/Delete
+### 2. Proses Penjualan
 
 ```
-Ambil Data Lama → Kembalikan Stok → Update/Delete → Kurangi Stok Baru → Commit
+Pilih Pelanggan → Pilih Sparepart → Input Jumlah → 
+Validasi Stok → Hitung Subtotal → Insert Penjualan → 
+Update Stok → Commit
+```
+
+### 3. Proses Update Stok
+
+```
+Ambil Data Penjualan Lama → Kembalikan Stok Lama → 
+Update Data Penjualan → Kurangi Stok Baru → Commit
+```
+
+### 4. Proses Delete Penjualan
+
+```
+Ambil Data Penjualan → Kembalikan Stok → 
+Delete Penjualan → Commit
 ```
 
 ---
 
-## 📁 Struktur Project
+## 📁 Struktur Project Detail
 
-### Core Packages
+### Package Structure
 
-```java
-com.sparepart.sales
-├── Main.java                    // Entry point
-├── config/
-│   └── DatabaseConfig.java      // Database connection
-├── models/
-│   ├── Sparepart.java          // Sparepart entity
-│   ├── Customer.java           // Customer entity
-│   └── Sale.java               // Sale entity
-├── dao/
-│   ├── SparepartDAO.java       // CRUD operations
-│   ├── CustomerDAO.java
-│   └── SaleDAO.java
-├── services/
-│   ├── StockService.java       // Stock management
-│   └── TransactionService.java // Sale transactions
-├── ui/
-│   ├── MainFrame.java          // Main window
-│   ├── SparepartForm.java      // Sparepart form
-│   ├── CustomerForm.java       // Customer form
-│   └── SaleForm.java           // Sale form
-└── utils/
-    ├── Validator.java          // Input validation
-    └── Formatter.java          // Data formatting
 ```
+src/
+├── conn/
+│   └── koneksi.java              # Database connection handler
+│
+└── view/
+    ├── FrameLogin.java           # Login form & authentication
+    ├── FrameMenu.java            # Main dashboard/menu
+    ├── FrameSparepart.java       # Sparepart CRUD operations
+    ├── FramePelanggan.java       # Customer management
+    ├── FramePenjualan.java       # Sales transaction
+    └── FramePetugas.java         # Staff/user management
+```
+
+### Resources
+
+```
+images/
+├── exit2.png                      # Exit/logout icon
+├── file.jpg                       # File icon
+├── toko.png                       # Store/shop icon
+└── user.png                       # User/profile icon
+```
+
+### Database
+
+```
+sparepart.sql                      # Full database dump with sample data
+```
+
+---
+
+## 🔧 Fitur-Fitur Utama
+
+### 1. Manajemen Sparepart
+- ➕ Tambah data sparepart baru
+- ✏️ Edit informasi sparepart
+- 🗑️ Hapus data sparepart
+- 🔍 Pencarian sparepart
+- 📊 Monitoring stok real-time
+
+### 2. Manajemen Pelanggan
+- ➕ Registrasi pelanggan baru
+- ✏️ Update data pelanggan
+- 🗑️ Hapus data pelanggan
+- 📋 Daftar pelanggan lengkap
+
+### 3. Transaksi Penjualan
+- 🛒 Input transaksi penjualan
+- 💵 Kalkulasi otomatis subtotal
+- 📉 Update stok otomatis
+- 🧾 History transaksi
+- ✏️ Edit transaksi
+- 🗑️ Batal transaksi dengan pengembalian stok
+
+### 4. Manajemen Petugas
+- 👤 Tambah akun petugas
+- 🔐 Pengaturan level akses
+- ✏️ Update profil petugas
+- 🔒 Keamanan password
 
 ---
 
@@ -314,18 +478,26 @@ com.sparepart.sales
 
 ### Cara Berkontribusi
 
-1. Fork repository
-2. Buat branch fitur baru (`git checkout -b fitur-unggulan`)
-3. Commit perubahan (`git commit -m 'Menambahkan fitur X'`)
-4. Push ke branch (`git push origin fitur-unggulan`)
-5. Buat Pull Request
+1. 🍴 Fork repository ini
+2. 🔱 Buat branch fitur baru (`git checkout -b fitur-unggulan`)
+3. 💾 Commit perubahan (`git commit -m 'Menambahkan fitur X'`)
+4. 📤 Push ke branch (`git push origin fitur-unggulan`)
+5. 🔃 Buat Pull Request
 
 ### Pedoman Kode
 
-- Gunakan Java naming conventions
-- Tambahkan komentar Javadoc
-- Test sebelum commit
-- Update documentation
+- ✅ Gunakan Java naming conventions
+- 📝 Tambahkan komentar untuk logika kompleks
+- 🧪 Test fitur sebelum commit
+- 📚 Update dokumentasi jika ada perubahan
+
+### Yang Bisa Dikontribusikan
+
+- 🐛 Bug fixes
+- ✨ Fitur baru
+- 📖 Perbaikan dokumentasi
+- 🎨 Perbaikan UI/UX
+- ⚡ Optimasi performa
 
 ---
 
@@ -336,8 +508,23 @@ MIT License
 
 Copyright (c) 2024 Sistem Penjualan Sparepart
 
-Izin diberikan, secara gratis, kepada siapa pun yang memperoleh salinan
-perangkat lunak ini dan file dokumentasi terkait untuk mengolahnya tanpa batasan.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ---
@@ -356,11 +543,41 @@ perangkat lunak ini dan file dokumentasi terkait untuk mengolahnya tanpa batasan
 
 ---
 
+## 🛠️ Troubleshooting
+
+### Masalah Koneksi Database
+```
+Error: Unable to connect to database
+```
+**Solusi:**
+- Pastikan MySQL/MariaDB sudah berjalan
+- Cek username dan password di `koneksi.java`
+- Verifikasi nama database sudah benar (`sparepart`)
+
+### Masalah JDBC Driver
+```
+Error: ClassNotFoundException: com.mysql.jdbc.Driver
+```
+**Solusi:**
+- Download MySQL Connector/J
+- Tambahkan ke Library project
+- Atau letakkan di folder `lib/`
+
+### Masalah Login
+```
+Username atau password salah
+```
+**Solusi:**
+- Gunakan kredensial default: `admin` / `123`
+- Atau cek tabel `petugas` di database
+
+---
+
 ## 📞 Dukungan & Kontak
 
 Pertanyaan atau masalah?
 
-- 📧 Email: support@sparepartsales.com
+
 - 💬 Issues: [GitHub Issues](#)
 - 📚 Dokumentasi: [Wiki](#)
 
