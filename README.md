@@ -527,22 +527,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
----
-
-<div align="center">
-
-## 🚀 Siap Mengotomatisasi Bisnis Anda?
-
-[![Download Project](https://img.shields.io/badge/%F0%9F%93%A5_Download_Project-blue?style=for-the-badge)](#)
-[![Laporkan Bug](https://img.shields.io/badge/%F0%9F%90%9B_Laporkan_Bug-red?style=for-the-badge)](#)
-[![Request Fitur](https://img.shields.io/badge/%F0%9F%92%A1_Request_Fitur-green?style=for-the-badge)](#)
-
-### ⭐ Jangan lupa beri bintang jika project ini membantu!
-
-</div>
-
----
-
 ## 🛠️ Troubleshooting
 
 ### Masalah Koneksi Database
